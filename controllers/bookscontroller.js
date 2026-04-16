@@ -2,33 +2,41 @@ import Book from "../models/bookmodel.js";
 
 export const getallbooks = async (req,res)=>{
     try {
-        
-        const allbooks= await Book.find({});
+        const allbooks=await Book.find({});
         console.log(allbooks);
         return res.status(200).json({data:allbooks});  
     } 
     catch (error) {
-        return res.status(400).json({ status:'error fetching data',error });
+        return res.status(400).json({ status:'error fetching data' });
     } 
 }
 
 
 export const insertBook = async (req, res)=>{
     try{
-        const body=req.body;
+        const { name,author,publication,category,price } = req.body;
+
+        if( !name || !author || !publication || !category || !price){
+            return res.status(404).json({status:'value is missing'})
+        }
+        if(typeof price !== "number"){
+            return res.status(400).json({ status:'price must be a number '});
+        }
+
         const newbook= await Book.create({
-            name: body.name,
-            author: body.author,
-            publication:body.publication,
-            category: body.category,
-            price: body.price
+            name,
+            author,
+            publication,
+            category,
+            price
         });
 
         console.log('the book created is:',newbook);
+
         return res.status(201).json({ status:'book inserted in database' });
     } 
     catch(error){
-        return res.status(500).json({status:'error while inserting book!', error: error })
+        return res.status(500).json({status:'error while inserting book!' })
     }    
 };
 
@@ -47,7 +55,7 @@ export const updatebookbyid = async (req,res)=>{
 
     } 
     catch (error) {
-        return res.status(500).json({ status:'server error', error: error });
+        return res.status(500).json({ status:'server error' });
     }
 }
 
