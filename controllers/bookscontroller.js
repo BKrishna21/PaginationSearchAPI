@@ -2,9 +2,29 @@ import Book from "../models/bookmodel.js";
 
 export const getallbooks = async (req,res)=>{
     try {
-        const allbooks=await Book.find({});
+        let page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 10;
+
+        if(page<1) page=1;
+        if(limit<2 || limit>20) limit=5;
+
+        const skip=(page-1)*limit;
+
+        const totalentries=await Book.countDocuments();
+        const totalpages= Math.ceil(totalentries/limit);
+    
+
+        const allbooks=await Book.find()
+        .skip(skip)
+        .limit(limit);
+
         console.log(allbooks);
-        return res.status(200).json({data:allbooks});  
+
+        return res.status(200).json({
+            allentries:totalentries,
+            allpages:totalpages,
+            data:allbooks
+        });  
     } 
     catch (error) {
         return res.status(400).json({ status:'error fetching data' });
