@@ -2,19 +2,32 @@ import Book from "../models/bookmodel.js";
 
 export const getallbooks = async (req,res)=>{
     try {
+        
+        const search = req.query.search || "";
         let page = parseInt(req.query.page) || 1;
         let limit = parseInt(req.query.limit) || 10;
 
         if(page<1) page=1;
-        if(limit<2 || limit>20) limit=5;
+        if(limit<1 || limit>20) limit=5;
 
         const skip=(page-1)*limit;
+        
+        let query={};
 
-        const totalentries=await Book.countDocuments();
+        if(search){
+            query = {
+                $or : [
+                    { name: { $regex:search , $options : "i" }},
+                    { author: { $regex: search , $options : "i" }}
+                ]
+            };
+        }
+
+        const totalentries=await Book.countDocuments(query);
         const totalpages= Math.ceil(totalentries/limit);
-    
 
-        const allbooks=await Book.find()
+
+        const allbooks=await Book.find(query)
         .skip(skip)
         .limit(limit);
 
