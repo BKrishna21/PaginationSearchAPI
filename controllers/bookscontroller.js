@@ -2,7 +2,7 @@ import Book from "../models/bookmodel.js";
 
 export const getallbooks = async (req,res)=>{
     try {
-        
+
         const search = req.query.search || "";
         let page = parseInt(req.query.page) || 1;
         let limit = parseInt(req.query.limit) || 10;
@@ -14,13 +14,30 @@ export const getallbooks = async (req,res)=>{
         
         let query={};
 
+        if(req.query.publication){
+            query.publication=req.query.publication;
+        }
+
+        if(req.query.category){
+            query.category=req.query.category;
+        }
+
+        if(req.query.maxprice || req.query.minprice){
+
+            query.price={};
+            if(req.query.maxprice){
+                query.price.$lte=parseInt(req.query.maxprice);
+            }
+            if(req.query.minprice){
+                query.price.$gte=parseInt(req.query.minprice);
+            }
+        }
+
         if(search){
-            query = {
-                $or : [
-                    { name: { $regex:search , $options : "i" }},
-                    { author: { $regex: search , $options : "i" }}
-                ]
-            };
+            query.$or = [
+                { name: { $regex:search , $options : "i" }},
+                { author: { $regex: search , $options : "i" }}
+            ]
         }
 
         const totalentries=await Book.countDocuments(query);
